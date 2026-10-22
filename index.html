@@ -66,7 +66,7 @@ const CREDIT_ME='EKREM'; // <- change to your username
 const FIREBASE_CONFIG={apiKey:"AIzaSyDu3M0aOhu9sE7VYTWE7gjXJIiTuZEkU04",authDomain:"ddoors.firebaseapp.com",projectId:"ddoors",appId:"1:446252788290:web:45b48702e76b10aa5fdbdb",databaseURL:"https://ddoors-default-rtdb.firebaseio.com/"};
 let USER=null,AUTH=null;const LG=document.getElementById('login'),LM=document.getElementById('lmsg');
 const showLogin=v=>{LG.style.display=v?'flex':'none';if(v)LM.textContent=''};
-try{if(window.firebase&&!FIREBASE_CONFIG.apiKey.startsWith('PASTE')){firebase.initializeApp(FIREBASE_CONFIG);AUTH=firebase.auth();
+try{if(window.firebase&&!FIREBASE_CONFIG.apiKey.startsWith('AIzaSyDu3M0aOhu9sE7VYTWE7gjXJIiTuZEkU04')){firebase.initializeApp(FIREBASE_CONFIG);AUTH=firebase.auth();
  AUTH.onAuthStateChanged(u=>{if(u){USER={name:(u.displayName||u.email||'PLAYER').toUpperCase().slice(0,16),g:1};showLogin(0)}else if(!USER||USER.g){USER=null;showLogin(1)}})}}catch(e){AUTH=null}
 showLogin(1);try{if(sessionStorage.getItem('guest')){USER={name:'GUEST',g:0};showLogin(0)}}catch(e){}
 document.getElementById('gl').onclick=()=>{if(!AUTH){LM.textContent='GOOGLE LOGIN IS NOT SET UP YET - PASTE YOUR FIREBASE CONFIG INTO FIREBASE_CONFIG IN THE CODE';return}
