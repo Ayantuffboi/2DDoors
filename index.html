@@ -63,7 +63,8 @@ const CREDIT_ME='EKREM'; // <- change to your username
 // ---------- Google login (Firebase) ----------
 // Paste your Firebase web config here (Firebase console > Project settings > Your apps).
 // Turn on Google in Authentication > Sign-in method, and add your site's domain to Authorized domains.
-const FIREBASE_CONFIG={apiKey:"PASTE_API_KEY",authDomain:"PASTE_PROJECT.firebaseapp.com",projectId:"PASTE_PROJECT",appId:"PASTE_APP_ID",databaseURL:"https://PASTE_PROJECT-default-rtdb.firebaseio.com"};
+const FIREBASE_CONFIG={apiKey:"AIzaSyDu3M0aOhu9sE7VYTWE7gjXJIiTuZEkU04",authDomain:"ddoors.firebaseapp.com",projectId:"ddoors",appId:"1:446252788290:web:45b48702e76b10aa5fdbdb
+",databaseURL:"https://ddoors-default-rtdb.firebaseio.com/"};
 let USER=null,AUTH=null;const LG=document.getElementById('login'),LM=document.getElementById('lmsg');
 const showLogin=v=>{LG.style.display=v?'flex':'none';if(v)LM.textContent=''};
 try{if(window.firebase&&!FIREBASE_CONFIG.apiKey.startsWith('PASTE')){firebase.initializeApp(FIREBASE_CONFIG);AUTH=firebase.auth();
