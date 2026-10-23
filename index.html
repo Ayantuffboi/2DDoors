@@ -510,7 +510,7 @@ const sTim=B(12,10,r=>{r(4,3,4,4,'#1a1a1a');r(5,4,1,1,'#f33');r(7,4,1,1,'#f33');
 const sJack=B(16,16,r=>{r(2,1,12,14,'#0a0a0a');r(3,4,4,4,'#fff');r(9,4,4,4,'#fff');r(4,5,2,2,'#000');r(10,5,2,2,'#000');r(5,10,6,4,'#300');r(5,10,6,1,'#eee')});
 const sSn=[0,1].map(u=>B(12,12,r=>{if(u){r(2,4,8,4,'#3a2a1a');r(1,5,10,2,'#5a4030');r(4,5,4,2,'#802020')}else{r(1,1,10,10,'#2a1a10');r(3,3,6,6,'#4a2a1a');[[0,0],[5,0],[10,0],[0,5],[10,5],[0,10],[5,10],[10,10]].forEach(([x,y])=>r(x,y,2,2,'#8a6a4a'));r(5,5,2,2,'#802020')}}));
 function creditsDraw(t){tx('CREDITS',W/2,42,10,'#d8b030');X.save();X.beginPath();X.rect(30,48,260,100);X.clip();
- const L=[['CREATED BY','AYAN'],['GAME DESIGN + IDEAS','AYAN'],['PRODUCER',CREDIT_ME],['CODE + PIXEL ART HELP','CLAUDE - ANTHROPIC AI'],['FONT','KODE MONO'],['INSPIRED BY','DOORS ON ROBLOX'],['THANKS FOR PLAYING!','']],sc=(t*16)%(L.length*30+110);
+ const L=[['CREATED BY','AYAN'],['GAME DESIGN + IDEAS','AYAN'],['PRODUCER',CREDIT_ME],['CODE + PIXEL ART HELP','CLAUDE - ANTHROPIC AI'],['FONT','KODE MONO'],['INSPIRED BY','DOORS ON ROBLOX'],['THANKS FOR TESTING!','']],sc=(t*16)%(L.length*30+110);
  L.forEach(([a,b],i)=>{const y=152+i*30-sc;tx(a,W/2,y,5,'#aa9a78');if(b)tx(b,W/2,y+13,8,'#ffd860')});X.restore();tx('> BACK <',W/2,160,6,'#ffd860')}
 // Jeff's shop cutscene (room 50) - seen through your own eyes
 function cutDraw(){const t=G.cut.t,r=rr(X);
