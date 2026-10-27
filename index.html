@@ -2364,7 +2364,7 @@ function drawToasts(){peekDraw();puzHUD();impDraw();glxDraw();dlgDraw();lookDraw
 // chat:      chats/{a_b}/m/{push}={u,n,t,x}   game chat: rooms/{sid}/chat
 // admin:     users/{uid}/grants/{push}={k,b,by} -> added to that player's menu money
 // ===================================================================
-const ADMINS=['ayan6-4@outlook.com','ekrem.cakar@ayatampa.com'];
+const ADMINS=['ayan6-4@outlook.com','ekrem.cakar@ayatampa.com','ayan.bhuiyan@ayatampa.com'];
 const SO={me:null,unsub:[],fr:{},rq:{},pub:{},chatWith:null,chatUnsub:null,gsid:null,gUnsub:null,gmsg:[],unread:{}};
 const isAdm=()=>!!(USER&&USER.email&&ADMINS.includes(String(USER.email).toLowerCase()));
 const soDB=()=>{try{return initDB()}catch(e){return null}};
@@ -2406,7 +2406,7 @@ function soPub(){const D=soDB(),me=SO.me;if(!D||!me)return;D.update('users/'+me.
 setInterval(()=>{if(SO.me)soPub()},30000);
 
 // ---------- username ----------
-function openName(first){const me=needAcct();if(!me)return;openSo(`<h2>${first?'PICK A USERNAME':'CHANGE USERNAME'}</h2><p class=sub>3-14 LETTERS, NUMBERS, SPACE, - OR _. OTHER PLAYERS SEE THIS NAME.</p><div class=row><input id=soNmI maxlength=14 value="${esc(USER&&USER.name||'')}"><button id=soNmS>SAVE</button></div><div id=soNmM class=sub></div><button onclick="closeSo()">CLOSE</button>`);
+function openName(first){const me=needAcct();if(!me)return;openSo(`<h2>${first?'PICK A USERNAME':'CHANGE USERNAME'}</h2><p class=sub>3-100 LETTERS, NUMBERS, SPACE, - OR _. OTHER PLAYERS SEE THIS NAME.</p><div class=row><input id=soNmI maxlength=100 value="${esc(USER&&USER.name||'')}"><button id=soNmS>SAVE</button></div><div id=soNmM class=sub></div><button onclick="closeSo()">CLOSE</button>`);
  const I=document.getElementById('soNmI');I.focus();I.onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')document.getElementById('soNmS').click()};
  document.getElementById('soNmS').onclick=async()=>{const M=document.getElementById('soNmM'),n=cleanName(I.value);if(n.length<3){M.textContent='TOO SHORT';return}const D=soDB(),lo=n.toLowerCase();
   try{const own=await D.get('names/'+lo);if(own&&own!==me.uid){M.textContent='THAT NAME IS TAKEN';return}const old=USER&&USER.name;if(old&&old.toLowerCase()!==lo){const o2=await D.get('names/'+old.toLowerCase());if(o2===me.uid)D.remove('names/'+old.toLowerCase())}
@@ -2415,7 +2415,7 @@ function openName(first){const me=needAcct();if(!me)return;openSo(`<h2>${first?'
 // ---------- friends ----------
 async function uidOf(name){const D=soDB();try{return await D.get('names/'+cleanName(name).toLowerCase())}catch(e){return null}}
 function openFriends(){const me=needAcct();if(!me)return;const rq=Object.entries(SO.rq||{}),fr=Object.entries(SO.fr||{});
- openSo(`<h2>FRIENDS</h2><div class=row><input id=soFI placeholder="FRIEND'S USERNAME" maxlength=14><button id=soFA>ADD FRIEND</button></div><div id=soFM class=sub></div>
+ openSo(`<h2>FRIENDS</h2><div class=row><input id=soFI placeholder="FRIEND'S USERNAME" maxlength=100><button id=soFA>ADD FRIEND</button></div><div id=soFM class=sub></div>
  ${rq.length?'<h3>FRIEND REQUESTS</h3>'+rq.map(([u,n])=>`<div class=row><b class=who>${esc(n)}</b><button data-a="${u}">ACCEPT</button><button data-d="${u}">DECLINE</button></div>`).join(''):''}
  <h3>YOUR FRIENDS (${fr.length})</h3>${fr.length?fr.map(([u,n])=>`<div class=row><b class=who>${esc(n)}</b><span class=sub id="on_${u}"></span><button data-c="${u}">CHAT</button><button data-r="${u}">REMOVE</button></div>`).join(''):'<p class=sub>NO FRIENDS YET - ADD SOMEONE BY THEIR USERNAME.</p>'}
  <br><button onclick="closeSo()">CLOSE</button>`);
