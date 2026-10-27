@@ -69,7 +69,7 @@ const FIREBASE_CONFIG={apiKey:"AIzaSyDu3M0aOhu9sE7VYTWE7gjXJIiTuZEkU04",authDoma
 let USER=null,AUTH=null;const LG=document.getElementById('login'),LM=document.getElementById('lmsg');
 const showLogin=v=>{LG.style.display=v?'flex':'none';if(v)LM.textContent=''};
 try{if(window.firebase&&!FIREBASE_CONFIG.apiKey.startsWith('PASTE')){firebase.initializeApp(FIREBASE_CONFIG);AUTH=firebase.auth();
- AUTH.onAuthStateChanged(u=>{if(u){USER={name:(u.displayName||u.email||'PLAYER').toUpperCase().slice(0,16),g:1,uid:u.uid,email:String(u.email||(u.providerData&&u.providerData[0]&&u.providerData[0].email)||'').toLowerCase()};showLogin(0);setTimeout(()=>{try{socialLogin()}catch(e){}},200);setTimeout(()=>{try{bkResume()}catch(e){}},300)}else if(!USER||USER.g){USER=null;showLogin(1)}})}}catch(e){AUTH=null}
+ AUTH.onAuthStateChanged(u=>{if(u){USER={name:(u.displayName||u.email||'PLAYER').toUpperCase().slice(0,100),g:1,uid:u.uid,email:String(u.email||(u.providerData&&u.providerData[0]&&u.providerData[0].email)||'').toLowerCase()};showLogin(0);setTimeout(()=>{try{socialLogin()}catch(e){}},200);setTimeout(()=>{try{bkResume()}catch(e){}},300)}else if(!USER||USER.g){USER=null;showLogin(1)}})}}catch(e){AUTH=null}
 showLogin(1);try{sessionStorage.removeItem('guest')}catch(e){}
 document.getElementById('gl').onclick=()=>{if(!AUTH){LM.textContent='GOOGLE LOGIN IS NOT SET UP YET - PASTE YOUR FIREBASE CONFIG INTO FIREBASE_CONFIG IN THE CODE';return}
  LM.textContent='OPENING GOOGLE...';AUTH.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>LM.textContent=String(e.message||e).toUpperCase())};
