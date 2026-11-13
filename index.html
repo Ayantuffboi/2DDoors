@@ -1220,8 +1220,8 @@ function losFog(R,cx,cy){const D=R.ds,pc=R.parts.filter((t,i)=>!D.po[i]).map(t=>
  for(let r=r1;r>=r0;r--)for(let c=c0;c<=c1;c++)if(!vis[c+','+r]&&blk(c,r)&&blk(c,r+1)&&vis[c+','+(r+1)])vis[c+','+r]=1;R._fogK=fk;R._fogV=vis}
  // smooth: cast rays from each player's eyes and cut a soft-edged hole in the darkness
  try{const FC=losFog.fc||(losFog.fc=document.createElement('canvas'));if(FC.width!==W||FC.height!==H){FC.width=W;FC.height=H}const f=FC.getContext('2d');f.setTransform(1,0,0,1,0,0);f.globalCompositeOperation='source-over';f.clearRect(0,0,W,H);f.fillStyle='rgba(0,0,0,.94)';f.fillRect(0,0,W,H);f.globalCompositeOperation='destination-out';f.fillStyle='#000';
-  const N=600,MX=Math.hypot(W,H)+40;for(const p of V){const ex=p.px,ey=p.py-6;const pk=(ex|0)+','+(ey|0)+'|'+S.size+'|'+pc.join(',');let P=p._fogP;if(!P||p._fogK!==pk){P=[];for(let k=0;k<N;k++){const a=k/N*Math.PI*2,dx=Math.cos(a),dy=Math.sin(a);let d=2,hit=0;for(;d<MX;d+=3){const c=Math.floor((ex+dx*d)/16),r=Math.floor((ey+dy*d)/16);if(c<-1||r<-1||c>R.w||r>hh)break;if(blk(c,r)){hit=1;break}}if(hit){const c=Math.floor((ex+dx*d)/16),r=Math.floor((ey+dy*d)/16);let e=0;while(e<16&&Math.floor((ex+dx*(d+e))/16)==c&&Math.floor((ey+dy*(d+e))/16)==r)e++;d+=Math.min(e,dy<-.2?16:10)}P.push(ex+dx*d,ey+dy*d)}p._fogP=P;p._fogK=pk}
-   f.beginPath();f.moveTo(P[0]-cx,P[1]-cy);for(let k=2;k<P.length;k+=2)f.lineTo(P[k]-cx,P[k+1]-cy);f.closePath();f.fill()}
+  const N=600,MX=Math.hypot(W,H)+40;for(const p of V){const ex=p.px,ey=p.py-6;const pk=(ex|0)+','+(ey|0)+'|'+S.size+'|'+pc.join(',');let P=p._fogP;if(!P||p._fogK!==pk){P=[];p._fogT=new Set();for(let k=0;k<N;k++){const a=k/N*Math.PI*2,dx=Math.cos(a),dy=Math.sin(a);let d=2,hit=0;for(;d<MX;d+=3){const c=Math.floor((ex+dx*d)/16),r=Math.floor((ey+dy*d)/16);if(c<-1||r<-1||c>R.w||r>hh)break;if(blk(c,r)){hit=1;break}}if(hit){let lo=Math.max(0,d-3),hi=d;for(let it=0;it<7;it++){const m=(lo+hi)/2;if(blk(Math.floor((ex+dx*m)/16),Math.floor((ey+dy*m)/16)))hi=m;else lo=m}d=hi+.5;const c=Math.floor((ex+dx*d)/16),r=Math.floor((ey+dy*d)/16);(p._fogT=p._fogT||new Set()).add(c+','+r)}P.push(ex+dx*d,ey+dy*d)}p._fogP=P;p._fogK=pk}
+   f.beginPath();f.moveTo(P[0]-cx,P[1]-cy);for(let k=2;k<P.length;k+=2)f.lineTo(P[k]-cx,P[k+1]-cy);f.closePath();f.fill();if(p._fogT)p._fogT.forEach(k=>{const[c,r]=k.split(',').map(Number);f.fillRect(c*16-cx,r*16-cy,16,16);if(blk(c,r-1))f.fillRect(c*16-cx,(r-1)*16-cy,16,16)})}
   f.globalCompositeOperation='source-over';const sf=X.filter;X.filter='blur(3px)';X.drawImage(FC,0,0);X.filter=sf||'none';return}catch(e){}
  X.fillStyle='rgba(0,0,0,.94)';for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++)if(!vis[c+','+r])X.fillRect(c*16-cx,r*16-cy,16,16)}
 // an old EXIT sign on two chains, slowly swinging and creaking
@@ -7222,7 +7222,7 @@ const gubLook=p=>!!p&&((isMeP(p)&&GUBM.on)||(!isMeP(p)&&p.u&&GMU[p.u]&&GMU[p.u].
 function catDraw(p,cx,cy){const x=Math.round(p.px-cx),y=Math.round(p.py-cy),t=performance.now()/1000,mv=p.mv?1:0,d=p.dir||0,fl=d==2?-1:1,r=rr(X);
  X.fillStyle='rgba(0,0,0,.3)';X.beginPath();X.ellipse(x,y,12,3,0,0,7);X.fill();
  const segs=6;for(let i=segs-1;i>=0;i--){const k=i/(segs-1),bob=Math.sin(t*(mv?12:3)-i*.9)*(mv?2.2:.8),sx=x-fl*(i*4-10),sy=y-5-bob*(i%2?1:.6);r(sx-4,sy-4,8,8,i%2?'#4aa83a':'#5ac84a');r(sx-4,sy-4,8,2,'#8ae87a');r(sx-3,sy+3,2,2,'#2a6a20');r(sx+1,sy+3,2,2,'#2a6a20')}
- const hx=x+fl*12,hy=y-8-Math.sin(t*(mv?12:3)+.9)*(mv?2:.6);r(hx-5,hy-5,10,10,'#6ad85a');r(hx-5,hy-5,10,2,'#9af08a');r(hx+(fl>0?0:-3),hy-2,3,3,'#fff');r(hx+(fl>0?1:-2),hy-1,1,1,'#000');r(hx-2,hy+2,4,1,'#2a6a20');
+ const hx=x+fl*12,hy=y-8-Math.sin(t*(mv?12:3)+.9)*(mv?2:.6);r(hx-5,hy-5,10,10,'#6ad85a');r(hx-5,hy-5,10,2,'#9af08a');r(hx-4,hy-2,3,3,'#fff');r(hx+1,hy-2,3,3,'#fff');r(hx+(fl>0?-3:-4),hy-1,1,1,'#000');r(hx+(fl>0?2:1),hy-1,1,1,'#000');r(hx-2,hy+2,4,1,'#2a6a20');
  r(hx-3,hy-9,1,4,'#2a3a20');r(hx+2,hy-9,1,4,'#2a3a20');r(hx-4,hy-10,2,2,'#ff5a8a');r(hx+2,hy-10,2,2,'#ff5a8a');
  if(p.nm)txO(String(p.nm),x,y-24,3,'#c8ffc8','#000','center')}
 {const o=player;player=function(p,cx,cy){if(p&&!p.hid&&gubLook(p)){try{catDraw(p,cx,cy);return}catch(e){}}return o.apply(this,arguments)}}
@@ -7876,7 +7876,7 @@ setInterval(bnPush,250);
 {const o=bldRoom;bldRoom=function(S,n,base){const R=o.apply(this,arguments);try{if(R&&S)R.nofog=S.nofog?1:0}catch(e){}return R}}
 {const o=bldUI;bldUI=function(){o.apply(this,arguments);try{if(BLD.play||!BLD.S)return;const u=document.getElementById('bldUI');if(!u||u.querySelector('#bldFog'))return;const tp=[...u.querySelectorAll('button')].find(b=>/TEST PLAY/.test(b.textContent));const b=document.createElement('button');b.id='bldFog';const lb=()=>b.textContent='🌑 SHADOWS: '+(BLD.S.nofog?'OFF':'ON');lb();b.onclick=()=>{BLD.S.nofog=BLD.S.nofog?0:1;lb();try{bldRebuild()}catch(e){}};if(tp)tp.after(b);else u.appendChild(b)}catch(e){}}}
 // ---------- BUILDER: you can't leave the level while building + TEMPLATES (ready-made levels to start from) ----------
-{const o=load;load=function(n,sub){if(BLD.on&&!BLD.play&&!sub&&n!==7&&G&&G.R&&G.R.bld){G.open=0;G.fade=0;try{msg('YOU ARE BUILDING - PRESS TEST PLAY TO TRY THE EXIT')}catch(e){}return}return o.apply(this,arguments)}}
+{const o=load;load=function(n,sub){if(BLD.on&&!BLD.play&&!sub&&n!==7&&G&&G.R&&G.R.bld){G.open=0;G.fade=0;try{msg('YOU ARE BUILDING - PRESS TEST PLAY TO TRY THE EXIT')}catch(e){}return}const wp=BLD.on&&BLD.play;const r=o.apply(this,arguments);if(wp&&!BLD.play&&G){G.open=0;G.fade=0}return r}}
 const BTPL=[
  ['EMPTY ROOM','A blank room to build anything.',()=>bldNew()],
  ['HOTEL HALLWAY','A long hallway with paintings, lamps and drawers.',()=>{const S={v:1,n:'HOTEL HALLWAY',w:60,h:9,f:1,X:57,sx:2,sy:4,o:[]};for(let c=3;c<56;c+=6){S.o.push(['wp',c,0],['ws',c+3,0])}for(let c=6;c<54;c+=9)S.o.push(['d',c,2],['p',c+4,7]);S.o.push(['fw',20,2],['fw',41,2],['k:lgt',30,5]);return S}],
@@ -7895,19 +7895,117 @@ function bldTemplates(){let d=document.getElementById('bldTpl');if(d){d.remove()
 {const o=bldUI;bldUI=function(){o.apply(this,arguments);try{if(BLD.play)return;const u=document.getElementById('bldUI');if(!u||u.querySelector('#bldTplB'))return;const ref=u.querySelector('#bldFog')||[...u.querySelectorAll('button')].find(b=>/TEST PLAY/.test(b.textContent));const b=document.createElement('button');b.id='bldTplB';b.textContent='📐 TEMPLATES';b.onclick=bldTemplates;if(ref)ref.after(b);else u.appendChild(b)}catch(e){}}}
 // ---------- GUBBY CAN BUILD TOO ----------
 {const o=bldOk;bldOk=function(){try{if(typeof isGubAcct=='function'&&isGubAcct())return true}catch(e){}return o.apply(this,arguments)}}
-// ---------- BUILDER DOORS: fake doors + Guiding Light doors (only ONE of all the light doors is real, picked each play) ----------
-BT.dF=['FAKE DOOR (LOCKED)','WALL',1,1];BT.dG=['GUIDING LIGHT DOOR (ONE IS REAL)','WALL',1,1];
+// ---------- BUILDER DOORS: real-looking doors you can ROTATE (R). FAKE ones are locked; of all the GUIDING LIGHT doors only ONE is real ----------
+BT.dF=['FAKE DOOR (LOCKED)','DOORS',1,2];BT.dG=['GUIDING LIGHT DOOR (ONE IS REAL)','DOORS',1,2];try{if(!BCATS.includes('DOORS'))BCATS.splice(BCATS.indexOf('SPECIAL'),0,'DOORS')}catch(e){}try{BROT.add('dF');BROT.add('dG')}catch(e){}
+function bdRect(d){const[w,h]=d.rot%2?[2,1]:[1,2];return[d.c*16,d.r*16,w*16,h*16]}
 {const o=bldRoom;bldRoom=function(S,n,base){const keep=[],D=[];(S.o||[]).forEach(q=>{if(q[0]=='dF'||q[0]=='dG')D.push(q);else keep.push(q)});const R=o.call(this,Object.assign({},S,{o:keep}),n,base);
- try{R.bdoors=D.map(q=>({k:q[0],c:q[1],x:q[1]*16+8}));const L=R.bdoors.filter(d=>d.k=='dG');R.gdoor=null;if(L.length){const i=((G&&G.seed)>>>0)%L.length;R.gdoor=L[i];R.doorX=R.gdoor.x}}catch(e){}return R}}
-{const o=floorX2;floorX2=function(R,cx,cy){o.apply(this,arguments);try{if(!R||!R.bdoors||!R.bdoors.length)return;const t=performance.now()/1000,dy=(R.doorY|0)-cy,build=BLD.on&&!BLD.play;
- R.bdoors.forEach(d=>{const x=d.x-cx;if(x<-40||x>W+40)return;const real=d===R.gdoor;
-  if(!real){I(sDoor[0],x-8,dy);if(build){txO(d.k=='dG'?'LIGHT?':'FAKE',x,dy-3,3,d.k=='dG'?'#aef4ff':'#ff9a8a','#000','center')}}
-  if(real&&!build){const g=X.createRadialGradient(x,dy+22,3,x,dy+22,46);g.addColorStop(0,'rgba(90,220,255,.45)');g.addColorStop(1,'rgba(90,220,255,0)');X.fillStyle=g;X.fillRect(x-46,dy-24,92,96);for(let k=0;k<6;k++){const ph=(t*.6+k*.17)%1;X.fillStyle='rgba(180,240,255,'+(1-ph)+')';X.fillRect(Math.round(x-10+((k*37)%20)),Math.round(dy+44-ph*44),1,1)}}
-  if(real&&build)txO('LIGHT?',x,dy-3,3,'#aef4ff','#000','center')})}catch(e){}}}
-{const o=doAct;doAct=function(p){try{const R=G&&G.R;if(R&&R.bdoors&&p&&!p.hid){const d=R.bdoors.find(d=>d!==R.gdoor&&Math.abs(p.px-d.x)<12&&p.py<74);if(d){R.fx.push({x:d.x,y:40,t:0,s:"IT'S LOCKED..."});bp(150,.25,'square',.08,90);nz(.15,.08,900,200);G.shake=.2;return}}}catch(e){}return o.apply(this,arguments)}}
-{const o=promptFor;promptFor=function(q){try{const R=G&&G.R;if(R&&R.bdoors&&q&&R.bdoors.some(d=>d!==R.gdoor&&Math.abs(q.px-d.x)<12&&q.py<74))return'OPEN';}catch(e){}return o.apply(this,arguments)}}
+ try{R.bdoors=D.map(q=>{const d={k:q[0],c:q[1],r:Math.max(0,q[2]|0),rot:(q[3]|0)%4};const[x,y,w,h]=bdRect(d);Object.assign(d,{x:x+w/2,y:y+h/2,rc:[x,y,w,h]});return d});const L=R.bdoors.filter(d=>d.k=='dG');R.gdoor=null;
+  if(L.length){R.gdoor=L[((G&&G.seed)>>>0)%L.length];R.doorX=-9999}R.xs=(R.xs||[]).concat(R.bdoors.map(d=>d.rc));rebuildSol(R)}catch(e){console.error(e)}return R}}
+{const o=floorX2;floorX2=function(R,cx,cy){o.apply(this,arguments);try{if(!R||!R.bdoors||!R.bdoors.length)return;const t=performance.now()/1000,build=BLD.on&&!BLD.play;
+ R.bdoors.forEach(d=>{const[x0,y0,w,h]=d.rc,x=x0-cx,y=y0-cy;if(x<-60||x>W+60||y<-60||y>H+60)return;const real=d===R.gdoor,op=real&&G.open>0?1:0;
+  if(real&&!build){const g=X.createRadialGradient(x+w/2,y+h/2,3,x+w/2,y+h/2,50);g.addColorStop(0,'rgba(90,220,255,.45)');g.addColorStop(1,'rgba(90,220,255,0)');X.fillStyle=g;X.fillRect(x+w/2-50,y+h/2-50,100,100)}
+  X.save();X.translate(x+w/2,y+h/2);X.rotate(d.rot*Math.PI/2);X.imageSmoothingEnabled=false;X.drawImage(sDoor[op],-8,-16);X.fillStyle='#e8c060';X.restore();
+  if(real&&!build)for(let k=0;k<6;k++){const ph=(t*.6+k*.17)%1;X.fillStyle='rgba(180,240,255,'+(1-ph)+')';X.fillRect(Math.round(x+((k*37)%w)),Math.round(y+h-ph*(h+10)),1,1)}
+  if(build)txO(d.k=='dG'?'LIGHT?':'FAKE',x+w/2,y-2,3,d.k=='dG'?'#aef4ff':'#ff9a8a','#000','center')})}catch(e){}}}
+const bdNear=(R,p,pad)=>R.bdoors.find(d=>{const[x,y,w,h]=d.rc;return p.px>x-pad&&p.px<x+w+pad&&p.py>y-pad&&p.py<y+h+pad+6});
+{const o=doAct;doAct=function(p){try{const R=G&&G.R;if(R&&R.bdoors&&p&&!p.hid){const d=bdNear(R,p,10);if(d&&d!==R.gdoor){R.fx.push({x:d.x,y:d.y-20,t:0,s:"IT'S LOCKED..."});bp(150,.25,'square',.08,90);nz(.15,.08,900,200);G.shake=.2;return}if(d&&d===R.gdoor&&!G.open&&!(BLD.on&&!BLD.play)){G.open=.01;bp(500,.2,'square',.06,300);return}}}catch(e){}return o.apply(this,arguments)}}
+{const o=promptFor;promptFor=function(q){try{const R=G&&G.R;if(R&&R.bdoors&&q){const d=bdNear(R,q,10);if(d)return'OPEN';}}catch(e){}return o.apply(this,arguments)}}
+// walking into the real door opens it too
+{const o=upd;upd=function(dt){const r=o.apply(this,arguments);try{const R=G&&G.R;if(st=='play'&&R&&R.gdoor&&!G.open&&!(BLD.on&&!BLD.play)&&!(NET&&NET.game&&!NET.host)){if(G.P.some(p=>!p.dead&&bdNear(R,p,3)===R.gdoor)){G.open=.01;bp(500,.2,'square',.06,300)}}}catch(e){}return r}}
 // a new real door every time you press TEST PLAY (the host picks, everyone sees the same one)
 setInterval(()=>{try{if(BLD.on&&BLD.play&&!BLD._wp&&!(NET&&NET.game&&!NET.host)&&G&&G.R&&G.R.bdoors&&G.R.bdoors.some(d=>d.k=='dG')){G.seed=(Math.random()*4294967296)>>>0;bldRebuild()}BLD._wp=BLD.play}catch(e){}},150);
+// =====================================================================
+// SEEK CHASE (TOP-DOWN): one long hotel corridor. Eyes on the walls, Seek rises from black slime behind you,
+// weave around fallen furniture, pick the Guiding Light door in each junction (doors are turned sideways in the walls),
+// dodge Seek's hands and the burning chandeliers, and Guiding Light slams the exit door in Seek's face.
+// =====================================================================
+const TDC_START=[35,60,85];
+function tdcLevel(){const S={v:1,n:'SEEK CHASE',w:236,h:12,f:1,X:-1,sx:4,sy:6,o:[]},R=Math.random,J=[];
+ const wall=(c,r)=>S.o.push(['Wh',c,r]);
+ const slalom=(a,b,step)=>{let top=R()<.5;for(let c=a;c<b;c+=step){const len=2+(R()*2|0);const pick=()=>['b','x','r','t','F','c'][R()*6|0];if(top){for(let r=2;r<2+len*2;r+=2)S.o.push([R()<.5?'b':pick(),c,r])}else{for(let r=11-len*2;r<11;r+=2)S.o.push([R()<.5?'b':pick(),c,Math.min(9,r)])}if(R()<.35)S.o.push(['x',c+3,4+(R()*4|0)]);top=!top}};
+ const junction=(c)=>{const rows=[3,6,9],ok=R()*3|0;for(let r=2;r<11;r++)if(!rows.includes(r)){wall(c,r);wall(c+1,r)}J.push({c,rows,ok,open:0})};
+ slalom(46,96,8);junction(100);slalom(106,150,7);junction(154);
+ for(let c=160;c<222;c+=13)if(R()<.6)S.o.push(['x',c+6,4+(R()*5|0)]);
+ for(let r=2;r<11;r++)if(r!=6){wall(224,r);wall(225,r)}
+ return{S,J}}
+function tdcBuild(n){const L=tdcLevel();const R=bldRoom(L.S,n);Object.assign(R,{bld:0,ch:0,run:1,doorX:-9999,bdoors:[],tint:'rgba(10,6,20,.35)',th:'DOOR '+String(n+1).padStart(3,'0')});
+ const T=R.tdc={n,J:L.J.map(j=>Object.assign(j,{rects:j.rows.map(r=>[j.c*16,r*16,32,16])})),exit:[224*16,6*16,32,16],eyes:[],hands:[],ch:[],trail:[],seek:{x:3*16,y:6*16+8,ph:'wait',t:0,v:0,an:0,row:2},fin:null,mus:0,last:null};
+ // the doors are solid until the real one opens
+ T.J.forEach(j=>j.rects.forEach(rc=>R.xs.push(rc)));R.xs.push(T.exit);rebuildSol(R);
+ for(let c=6;c<44;c+=3)T.eyes.push({x:c*16+Math.random()*12,y:4+Math.random()*16,s:.6+Math.random()*.5});for(let c=160;c<222;c+=6)T.eyes.push({x:c*16+Math.random()*12,y:4+Math.random()*16,s:.5+Math.random()*.4});
+ for(let c=162,i=0;c<220;c+=8,i++)T.hands.push({x:c*16+8,top:i%2==0,ph:0,t:0});
+ [176,196,212].forEach(c=>T.ch.push({x:c*16+8,y:(4+Math.random()*5|0)*16,ph:0,t:0}));
+ R.lights=[];for(let c=4;c<230;c+=10)R.lights.push({k:'n',x:c*16,y:3*16,r:70});return R}
+{const o=load;load=function(n,sub){const r=o.apply(this,arguments);try{if(!sub&&TDC_START.includes(n)&&G&&!G.bk&&!G.muf&&!(NET&&NET.game)&&(G.np|0)<=1&&!(typeof BLD=='object'&&BLD.on)){G.R=tdcBuild(n);G.R.tdc.start=performance.now();const p=G.P[0];if(p){p.px=4*16+8;p.py=6*16+8;try{tpP(p)}catch(e){}}}}catch(e){console.error(e)}return r}}
+const tdcHit=(p,rc,pad)=>p.px>rc[0]-pad&&p.px<rc[0]+rc[2]+pad&&p.py>rc[1]-pad&&p.py<rc[1]+rc[3]+pad+6;
+function tdcDone(T){const grp=[[35,36,37],[60,61,62],[85,86,87]].find(g=>g.includes(T.n))||[T.n];const nx=grp[grp.length-1]+1;try{G.P.forEach(p=>award(p,'SEEK'))}catch(e){}G.room=nx;load(nx);G.fade=1;TOASTS.push({h:'SEEK',n:'YOU ESCAPED SEEK',t:0})}
+function tdcUpd(R,dt){const T=R.tdc,p=G.P[0];if(!p||p.dead)return;const K=T.seek;
+ if(T.fin){T.fin.t+=dt;const t=T.fin.t;p.stun=Math.max(p.stun||0,.1);if(t>.12&&!T.fin.sl){T.fin.sl=1;G.shake=1;nz(.4,.2,900,80);bp(80,.5,'square',.16,40)}[.9,1.5,2.1].forEach((b,i)=>{if(t>b&&!T.fin['b'+i]){T.fin['b'+i]=1;G.shake=.7;nz(.25,.18,300,40);bp(55,.3,'square',.15,30)}});
+  if(K.ph=='run'){const tx=T.exit[0]-14;if(K.x<tx)K.x=Math.min(tx,K.x+120*dt);K.an+=dt*8}if(t>3.8)tdcDone(T);return}
+ // breadcrumbs for Seek
+ const lc=T.trail[T.trail.length-1];if(!lc||Math.hypot(p.px-lc[0],p.py-lc[1])>6)T.trail.push([p.px,p.py]);
+ if(K.ph=='wait'&&p.px>15*16){K.ph='rise';K.t=0;K.x=3*16;K.y=p.py;T.trail=[[K.x,K.y],[p.px,p.py]];bp(45,2,'sawtooth',.16,25);nz(1.6,.12,500,60);G.shake=.6}
+ if(K.ph=='rise'){K.t+=dt;if(K.t>1.5){K.ph='run';K.v=88}}
+ if(K.ph=='run'){K.v=Math.min(98,K.v+.8*dt);let gap=0;{let px=K.x,py=K.y;for(const c of T.trail){gap+=Math.hypot(c[0]-px,c[1]-py);px=c[0];py=c[1]}gap+=Math.hypot(p.px-px,p.py-py)}
+  let v=gap>150?140:K.v,step=v*dt;while(step>0&&T.trail.length){const c=T.trail[0],dx=c[0]-K.x,dy=c[1]-K.y,l=Math.hypot(dx,dy);if(l<=step){K.x=c[0];K.y=c[1];step-=l;T.trail.shift()}else{K.x+=dx/l*step;K.y+=dy/l*step;K.row=Math.abs(dx)>Math.abs(dy)?(dx>0?2:1):0;step=0}}K.an+=v*dt/9;
+  if(Math.hypot(p.px-K.x,p.py-K.y)<14&&!G.god){kill(p,'SEEK CAUGHT YOU','Follow the blue light to the right door, and stay away from the hands and the fire');return}
+  T.mus-=dt;if(T.mus<=0){T.mus=.16;T.mi=(T.mi|0)+1;const N=[55,55,82,55,73,55,98,92];bp(N[T.mi%8],.12,'square',.05,N[T.mi%8]*.98);if(T.mi%2==0)nz(.05,.05,120,60)}}
+ // junction doors
+ T.J.forEach(j=>j.rects.forEach((rc,i)=>{if(i===j.ok&&j.open)return;if(!tdcHit(p,rc,10))return;if(i===j.ok){j.open=1;R.xs=R.xs.filter(q=>q!==rc);rebuildSol(R);bp(700,.12,'triangle',.06,900);nz(.15,.06,1500,300)}else if(!(j.bump>0)){j.bump=.6;p.stun=.4;G.shake=.3;bp(150,.25,'square',.08,90);R.fx.push({x:rc[0]+16,y:rc[1]-8,t:0,s:'LOCKED! FOLLOW THE LIGHT'})}}));T.J.forEach(j=>{if(j.bump>0)j.bump-=dt});
+ // hands
+ T.hands.forEach(h=>{if(h.ph==0&&h.x-p.px<110&&h.x>p.px-20){h.ph=1;h.t=0;nz(.5,.06,3000,800)}if(h.ph){h.t+=dt;if(h.ph==1&&h.t>.8){h.ph=2;h.t=0;bp(90,.3,'sawtooth',.1,50)}
+  if(h.ph==2){const reach=Math.min(1,h.t/.15)*80,y0=h.top?32:R.h*16-16,y1=h.top?y0+reach:y0-reach;if(Math.abs(p.px-h.x)<11&&p.py>Math.min(y0,y1)-4&&p.py<Math.max(y0,y1)+10&&!(h.got)){h.got=1;p.stun=.8;try{hurt(p,12,'SEEK GRABBED YOU','When the wall starts dripping, a hand is coming - go around it')}catch(e){}R.fx.push({x:p.px,y:p.py-30,t:0,s:'IT GRABBED YOU!'})}if(h.t>.9)h.ph=3}}});
+ // chandeliers -> fire
+ T.ch.forEach(c=>{if(c.ph==0&&c.x-p.px<140){c.ph=1;c.t=0}if(c.ph==1){c.t+=dt;if(c.t>.8){c.ph=2;G.shake=.8;nz(.5,.2,1800,200);bp(70,.4,'square',.12,40)}}if(c.ph==2&&Math.abs(p.px-c.x)<16&&Math.abs(p.py-c.y-8)<16){c.bt=(c.bt||0)-dt;if(c.bt<=0){c.bt=.6;try{hurt(p,18,'BURNED BY THE CHANDELIER FIRE','Walk around the fire')}catch(e){}}}});
+ // the exit
+ if(tdcHit(p,T.exit,10)&&!T.fin){T.fin={t:0};G.flash=.6;bp(1200,.5,'sine',.12,1800);p.px=T.exit[0]+48;p.py=T.exit[1]+8;try{tpP(p)}catch(e){}}}
+{const o=upd;upd=function(dt){const r=o.apply(this,arguments);try{const R=G&&G.R;if(st=='play'&&R&&R.tdc&&!G.cut&&!G.pz)tdcUpd(R,Math.min(dt,.05))}catch(e){console.error(e)}return r}}
+function tdcDoor(x,y,open,glow,t){if(glow){const g=X.createRadialGradient(x+16,y+8,3,x+16,y+8,52);g.addColorStop(0,'rgba(90,220,255,.5)');g.addColorStop(1,'rgba(90,220,255,0)');X.fillStyle=g;X.fillRect(x-36,y-44,104,104);for(let k=0;k<6;k++){const ph=(t*.6+k*.17)%1;X.fillStyle='rgba(180,240,255,'+(1-ph)+')';X.fillRect(Math.round(x-10-ph*20),Math.round(y+((k*29)%16)),1,1)}}
+ X.save();X.translate(x+16,y+8);X.rotate(-Math.PI/2);X.imageSmoothingEnabled=false;X.drawImage(sDoor[open?1:0],-8,-16);X.restore()}
+{const o=floorX2;floorX2=function(R,cx,cy){o.apply(this,arguments);try{const T=R&&R.tdc;if(!T)return;const t=performance.now()/1000;
+ T.eyes.forEach(e=>{const x=e.x-cx,y=e.y-cy;if(x<-20||x>W+20)return;const z=e.s*(1+Math.sin(t*3+e.x)*.06),pl=G.P[0];X.fillStyle='#000';X.beginPath();X.ellipse(x,y,8*z,5*z,0,0,7);X.fill();X.fillStyle='#e8e8e8';X.beginPath();X.arc(x+(pl&&pl.px>e.x?2:-2)*z,y+1,2.3*z,0,7);X.fill();X.fillStyle='#000';X.beginPath();X.arc(x+(pl&&pl.px>e.x?2.4:-2.4)*z,y+1,1.1*z,0,7);X.fill()});
+ T.J.forEach(j=>j.rects.forEach((rc,i)=>{const x=rc[0]-cx,y=rc[1]-cy;if(x<-60||x>W+60)return;tdcDoor(x,y,i===j.ok&&j.open,i===j.ok&&!j.open,t)}));
+ {const x=T.exit[0]-cx,y=T.exit[1]-cy;if(x>-80&&x<W+80){tdcDoor(x,y,!!T.fin&&T.fin.t<.12,!T.fin||T.fin.t<2.4,t);txO('EXIT',x+16,y-20,4,'#aef4ff','#000','center')}}
+ T.ch.forEach(c=>{const x=c.x-cx,y=c.y-cy;if(x<-40||x>W+40)return;if(c.ph==1){const k=Math.min(1,c.t/.8);X.fillStyle='rgba(0,0,0,'+(.2+.35*k)+')';X.beginPath();X.ellipse(x,y+8,6+k*12,3+k*6,0,0,7);X.fill()}
+  if(c.ph==2){for(let i=0;i<9;i++){const fx=x-14+i*3.4,fh=6+Math.abs(Math.sin(t*12+i*1.7))*10;X.fillStyle=i%2?'#ff7a20':'#ffc040';X.fillRect(Math.round(fx),Math.round(y+14-fh),3,fh)}X.fillStyle='#c8a040';X.fillRect(x-10,y+12,20,4);const g=X.createRadialGradient(x,y+6,2,x,y+6,40);g.addColorStop(0,'rgba(255,140,40,.35)');g.addColorStop(1,'rgba(255,140,40,0)');X.fillStyle=g;X.fillRect(x-40,y-34,80,80)}});
+ T.hands.forEach(h=>{if(h.ph!=1)return;const x=h.x-cx,y=(h.top?30:R.h*16-18)-cy,j=Math.sin(t*60)*1.5;X.fillStyle='#050505';for(let i=0;i<3;i++)X.fillRect(Math.round(x-6+i*5+j),Math.round(y+(h.top?((t*30+i*7)%12):-((t*30+i*7)%12))),2,4)});
+ const K=T.seek;if(K.ph=='rise'){const k=Math.min(1,K.t/1.5),x=K.x-cx,y=K.y-cy;X.fillStyle='#050505';X.beginPath();X.ellipse(x,y+4,8+k*10,4+k*4,0,0,7);X.fill();for(let i=0;i<6;i++){X.fillRect(Math.round(x-12+i*5),Math.round(y+4-((t*40+i*13)%12)),2,3)}}}catch(e){}}}
+// Seek + the hands are drawn on top of the darkness
+{const o=drawAfterMask;drawAfterMask=function(R,cx,cy){o.apply(this,arguments);try{const T=R&&R.tdc;if(!T)return;const K=T.seek,t=performance.now()/1000;
+ T.hands.forEach(h=>{if(h.ph!=2)return;const reach=Math.min(1,h.t/.15)*80,x=h.x-cx,y0=(h.top?32:R.h*16-16)-cy,y1=h.top?y0+reach:y0-reach;X.fillStyle='#060606';X.fillRect(Math.round(x-5),Math.round(Math.min(y0,y1)),10,Math.round(Math.abs(y1-y0)));X.fillRect(Math.round(x-11),Math.round(y1-(h.top?0:8)),22,8);for(let i=0;i<4;i++)X.fillRect(Math.round(x-11+i*6),Math.round(h.top?y1+6:y1-16),3,10+(i%2)*3)});
+ if((K.ph=='rise'||K.ph=='run')&&typeof SPRS=='object'&&SPRS.ok){const x=K.x-cx,y=K.y-cy,k=K.ph=='rise'?Math.min(1,K.t/1.5):1;const F=K.row==0?[0,2,3,5,6,7]:[0,1,2,3,4,5,6,7],f=F[Math.floor(K.an*1.5)%F.length];const w=SPRS.w,h=SPRS.h*k;X.imageSmoothingEnabled=false;
+  const g=X.createLinearGradient(x-120,0,x,0);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');X.fillStyle=g;X.fillRect(x-120,0,120,H);
+  X.drawImage(SPRS.im,f*SPRS.w,K.row*SPRS.h,SPRS.w,SPRS.h*k,Math.round(x-w/2),Math.round(y+6-h),w,Math.round(h))}
+ if(K.ph=='run'){const p=G.P[0];const d=p?Math.hypot(p.px-K.x,p.py-K.y):999,a=Math.max(0,Math.min(1,1-(d-20)/170));if(a>0){const g=X.createLinearGradient(0,0,90,0);g.addColorStop(0,'rgba(120,0,0,'+(.5*a)+')');g.addColorStop(1,'rgba(120,0,0,0)');X.fillStyle=g;X.fillRect(0,0,90,H)}}
+ if(T.J.some(j=>!j.open&&Math.abs((G.P[0]||{}).px-j.c*16)<140))txO('FOLLOW THE LIGHT',W/2,40,4,'#aef4ff','#000','center');
+ if(T.fin){const t2=T.fin.t;if(t2<.35){X.fillStyle='rgba(170,240,255,'+(1-t2/.35)*.9+')';X.fillRect(0,0,W,H)}if(t2>.9&&t2<2.4)txO('BANG!',W/2+((Math.floor(t2*2)%2)?40:-40),60,6,'#ff6a5a','#000','center');if(t2>2.4)txO('YOU ESCAPED.',W/2,70,8,'#aef4ff','#000','center')}
+ if(K.ph=='wait'&&(performance.now()-(T.start||0))<5000)txO('RUN →',W/2,50,6,'#e8d9b0','#000','center')}catch(e){}}}
+// ---------- GUBBY ADMIN "BUFF" (one time): confetti + yay, promises everything... then LOL ----------
+window.GUBNERF=0;let GUBARM=0;
+function gubBuffShow(){if(document.getElementById('gubBuff'))return;try{localStorage.setItem('gubBuff1','1')}catch(e){}GUBARM=1;
+ const d=document.createElement('div');d.id='gubBuff';d.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);font-family:"Kode Mono",monospace';
+ const cv=document.createElement('canvas');cv.width=innerWidth;cv.height=innerHeight;cv.style.cssText='position:absolute;inset:0;pointer-events:none';d.appendChild(cv);
+ const box=document.createElement('div');box.style.cssText='position:relative;background:linear-gradient(#1a3a1a,#0c1a0c);border:4px solid #8ce8a0;border-radius:16px;padding:22px 28px;max-width:520px;text-align:center;color:#f0ffe8;box-shadow:0 0 60px #8ce8a066';
+ box.innerHTML=`<div style="font-size:46px">🐛✨</div><div style="font:900 30px monospace;color:#8ce8a0;text-shadow:3px 3px #000;letter-spacing:2px">GUBBY ADMIN BUFF!!</div><div style="margin:10px 0 14px;font-size:14px;opacity:.8">YOU ARE NOW THE MOST POWERFUL ADMIN EVER</div>
+ <div style="text-align:left;font-size:14px;line-height:1.9;display:inline-block">⚡ INFINITE BAN POWER (NO ASKING)<br>💰 SUMMON 1,000,000 DOORKNOBS<br>👑 INSTANT OWNER RANK<br>🛡 GOD MODE FOREVER<br>🌀 TELEPORT ANYONE, ANYWHERE<br>🔥 ONE-SHOT EVERY ENTITY</div><br><button id=gbOk style="margin-top:14px;font:900 18px monospace;padding:10px 26px;border-radius:10px;border:0;background:#8ce8a0;color:#0c1a0c;cursor:pointer">LET'S GOOO!!</button>`;
+ d.appendChild(box);document.body.appendChild(d);
+ // confetti + yay
+ const c=cv.getContext('2d'),P=[];for(let i=0;i<220;i++)P.push({x:Math.random()*cv.width,y:-Math.random()*cv.height,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,r:Math.random()*6.3,c:['#ff5a5a','#ffd860','#8ce8a0','#6ab0ff','#ff8ad0','#fff'][i%6]});
+ let run=1;const fr=()=>{if(!run)return;c.clearRect(0,0,cv.width,cv.height);P.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.r+=.15;if(q.y>cv.height+10){q.y=-10;q.x=Math.random()*cv.width}c.save();c.translate(q.x,q.y);c.rotate(q.r);c.fillStyle=q.c;c.fillRect(-4,-2,8,4);c.restore()});requestAnimationFrame(fr)};fr();
+ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>bp(f,.25,'square',.08,f*1.02),i*130));setTimeout(()=>{nz(.8,.08,2500,800);[784,988,1175,1568].forEach((f,i)=>setTimeout(()=>bp(f,.3,'triangle',.07,f),i*90))},650);
+ box.querySelector('#gbOk').onclick=()=>{run=0;d.remove();bp(1200,.15,'square',.06,1600)}}
+function gubLol(){GUBARM=0;window.GUBNERF=1;const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);font-family:"Kode Mono",monospace;cursor:pointer';
+ d.innerHTML='<div style="text-align:center;color:#fff"><div style="font:900 120px monospace;color:#ff5a5a;text-shadow:6px 6px #000">LOL</div><div style="font:900 22px monospace;color:#8ce8a0;margin-top:6px">NONE OF THAT WAS REAL. 🐛</div><div style="font-size:15px;margin-top:10px;opacity:.85">GUBBY ADMIN IS NOW EVEN WORSE: SLOWER, AND YOUR BUTTONS DON\'T WORK.<br>(SIGN OUT AND BACK IN TO FIX IT)</div><div style="font-size:12px;opacity:.6;margin-top:14px">CLICK TO CLOSE</div></div>';
+ document.body.appendChild(d);d.onclick=()=>d.remove();bp(200,.4,'sawtooth',.1,80);setTimeout(()=>bp(150,.5,'sawtooth',.1,60),300)}
+// show it the first time Gubby is signed in
+setInterval(()=>{try{if(!(typeof isGubAcct=='function'&&isGubAcct()))return;if(!SO.me||document.getElementById('gubBuff'))return;let seen=0;try{seen=localStorage.getItem('gubBuff1')=='1'}catch(e){}if(!seen&&st=='play')gubBuffShow()}catch(e){}},1500);
+// the first thing he tries to do -> LOL; after that his admin buttons do nothing until he signs in again
+addEventListener('click',e=>{try{if(!(typeof isGubAcct=='function'&&isGubAcct()))return;const b=e.target&&e.target.closest&&e.target.closest('#so button');if(!b||/CLOSE|✕|^X$/.test(b.textContent.trim())||b.closest('#adNav'))return;
+ if(GUBARM){e.preventDefault();e.stopImmediatePropagation();gubLol();return}if(window.GUBNERF){e.preventDefault();e.stopImmediatePropagation();const t=b.textContent;b.textContent='NOPE 🐛';bp(150,.1,'square',.05);setTimeout(()=>{b.textContent=t},700)}}catch(x){}},true);
+{const o=movePlayer;movePlayer=function(p,dt,ci){if(window.GUBNERF&&typeof isMeP=='function'&&isMeP(p))return o.call(this,p,dt*.5,ci);return o.apply(this,arguments)}}
+{const o=player;player=function(p,cx,cy){const r=o.apply(this,arguments);try{if(window.GUBNERF&&isMeP(p)&&st=='play'){txO('NERFED',Math.round((p.rx??p.px)-cx),Math.round((p.ry??p.py)-cy)-30,3,'#ff6a5a','#000','center')}}catch(e){}return r}}
+// signing in again makes it normal (GUBNERF only lives until the page reloads or you sign in again)
+{const o=socialLogin;socialLogin=async function(){window.GUBNERF=0;return o.apply(this,arguments)}}
 // admin panel fix: never build it twice at the same time (that made the tabs + builder buttons pile up)
 {const o=openAdmin;let busy=0,again=0;
  const tidy=()=>{try{const P=soP();if(!P)return;const navs=[...P.querySelectorAll('#adNav')],bodies=[...P.querySelectorAll('#adBody')];
