@@ -1221,7 +1221,11 @@ function losFog(R,cx,cy){const D=R.ds,pc=R.parts.filter((t,i)=>!D.po[i]).map(t=>
  // smooth: cast rays from each player's eyes and cut a soft-edged hole in the darkness
  try{const FC=losFog.fc||(losFog.fc=document.createElement('canvas'));if(FC.width!==W||FC.height!==H){FC.width=W;FC.height=H}const f=FC.getContext('2d');f.setTransform(1,0,0,1,0,0);f.globalCompositeOperation='source-over';f.clearRect(0,0,W,H);f.fillStyle='rgba(0,0,0,.94)';f.fillRect(0,0,W,H);f.globalCompositeOperation='destination-out';f.fillStyle='#000';
   const N=600,MX=Math.hypot(W,H)+40;for(const p of V){const ex=p.px,ey=p.py-6;const pk=(ex|0)+','+(ey|0)+'|'+S.size+'|'+pc.join(',');let P=p._fogP;if(!P||p._fogK!==pk){P=[];p._fogT=new Set();for(let k=0;k<N;k++){const a=k/N*Math.PI*2,dx=Math.cos(a),dy=Math.sin(a);let d=2,hit=0;for(;d<MX;d+=3){const c=Math.floor((ex+dx*d)/16),r=Math.floor((ey+dy*d)/16);if(c<-1||r<-1||c>R.w||r>hh)break;if(blk(c,r)){hit=1;break}}if(hit){let lo=Math.max(0,d-3),hi=d;for(let it=0;it<7;it++){const m=(lo+hi)/2;if(blk(Math.floor((ex+dx*m)/16),Math.floor((ey+dy*m)/16)))hi=m;else lo=m}d=hi+.5;const c=Math.floor((ex+dx*d)/16),r=Math.floor((ey+dy*d)/16);(p._fogT=p._fogT||new Set()).add(c+','+r)}P.push(ex+dx*d,ey+dy*d)}p._fogP=P;p._fogK=pk}
-   f.beginPath();f.moveTo(P[0]-cx,P[1]-cy);for(let k=2;k<P.length;k+=2)f.lineTo(P[k]-cx,P[k+1]-cy);f.closePath();f.fill();if(p._fogT)p._fogT.forEach(k=>{const[c,r]=k.split(',').map(Number);f.fillRect(c*16-cx,r*16-cy,16,16);if(blk(c,r-1))f.fillRect(c*16-cx,(r-1)*16-cy,16,16)})}
+   f.beginPath();f.moveTo(P[0]-cx,P[1]-cy);for(let k=2;k<P.length;k+=2)f.lineTo(P[k]-cx,P[k+1]-cy);f.closePath();f.fill();if(p._fogT)p._fogT.forEach(k=>{const[c,r]=k.split(',').map(Number);f.fillRect(c*16-cx,r*16-cy,16,16);if(blk(c,r-1))f.fillRect(c*16-cx,(r-1)*16-cy,16,16)})
+   // wall faces: any wall tile whose floor tile below can be seen is shown in full (no dark columns in the wall)
+   if(!p._fogF||p._fogFK!==pk){const F=[];const los=(tx,ty)=>{const n=Math.ceil(Math.hypot(tx-ex,ty-ey)/4);for(let i=1;i<n;i++){const x=ex+(tx-ex)*i/n,y=ey+(ty-ey)*i/n;if(blk(Math.floor(x/16),Math.floor(y/16)))return false}return true};
+    for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){if(!blk(c,r)||blk(c,r+1))continue;if(los(c*16+8,(r+1)*16+4)){F.push(c,r);let k=r-1;while(k>=r-2&&blk(c,k)){F.push(c,k);k--}}}p._fogF=F;p._fogFK=pk}
+   for(let i=0;i<p._fogF.length;i+=2)f.fillRect(p._fogF[i]*16-cx,p._fogF[i+1]*16-cy,16,16)}
   f.globalCompositeOperation='source-over';const sf=X.filter;X.filter='blur(3px)';X.drawImage(FC,0,0);X.filter=sf||'none';return}catch(e){}
  X.fillStyle='rgba(0,0,0,.94)';for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++)if(!vis[c+','+r])X.fillRect(c*16-cx,r*16-cy,16,16)}
 // an old EXIT sign on two chains, slowly swinging and creaking
@@ -6367,8 +6371,8 @@ function bldUndo(){if(!BLD.undo.length)return msg('NOTHING TO UNDO');BLD.S=JSON.
 // update while building: free camera, no monsters
 {const o=upd;upd=function(dt){if(!BLD.on||BLD.play)return o.apply(this,arguments);try{G.R.ev=null;G.R.scr=null;G.R.eyeE=null;const p0=G.P[0],sx=p0.px,sy=p0.py;o.apply(this,arguments);p0.px=sx;p0.py=sy}catch(e){}try{const p=G.P[0],k=BLD.keys,sp=(k.ShiftLeft?420:220)*dt;p.px+=((k.KeyD||k.ArrowRight)?sp:0)-((k.KeyA||k.ArrowLeft)?sp:0);p.py+=((k.KeyS||k.ArrowDown)?sp:0)-((k.KeyW||k.ArrowUp)?sp:0);
  p.px=Math.max(0,Math.min(G.R.w*16,p.px));p.py=Math.max(0,Math.min((G.R.h||RH)*16,p.py));p.hid=0;p.dead=0;G.R.ev=null;G.R.scr=null;G.R.eyeE=null;fxTick&&0}catch(e){}}}
-{const o=player;player=function(p){if(BLD.on&&!BLD.play&&p===G.P[0])return;return o.apply(this,arguments)}}
-addEventListener('keydown',e=>{if(!BLD.on||BLD.play)return;if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;if((e.ctrlKey||e.metaKey)&&e.code=='KeyZ'){bldUndo();e.preventDefault();e.stopImmediatePropagation();return}if(e.key=='Escape'){bldClose();e.stopImmediatePropagation();return}BLD.keys[e.code]=1;e.preventDefault();e.stopImmediatePropagation()},true);
+{const o=player;player=function(p){if(BLD.on&&!BLD.play&&!BLD.walk&&p===G.P[0])return;return o.apply(this,arguments)}}
+addEventListener('keydown',e=>{if(!BLD.on||BLD.play)return;if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;if(!e.repeat&&window.BKH&&BKH.some(f=>{try{return f(e)}catch(x){return false}})){e.preventDefault();e.stopImmediatePropagation();return}if((e.ctrlKey||e.metaKey)&&e.code=='KeyZ'){bldUndo();e.preventDefault();e.stopImmediatePropagation();return}if(e.key=='Escape'){bldClose();e.stopImmediatePropagation();return}BLD.keys[e.code]=1;e.preventDefault();e.stopImmediatePropagation()},true);
 addEventListener('keyup',e=>{BLD.keys[e.code]=0},true);
 const bldXY=e=>{const r=X.canvas.getBoundingClientRect();return[Math.floor(((e.clientX-r.left)/r.width*W+(G.cx||0))/16),Math.floor(((e.clientY-r.top)/r.height*H+(G.cy||0))/16)]};
 addEventListener('mousemove',e=>{if(!BLD.on||BLD.play||e.target!==X.canvas)return;[BLD.mx,BLD.my]=bldXY(e);if(e.buttons&1&&(BLD.sel=='W'||BLD.sel=='hg'))bldPlace(BLD.mx,BLD.my);if(e.buttons&2)bldErase(BLD.mx,BLD.my)},true);
@@ -7230,7 +7234,7 @@ function catDraw(p,cx,cy){const x=Math.round(p.px-cx),y=Math.round(p.py-cy),t=pe
 // learn who else is in gubby mode (checked every few seconds)
 setInterval(()=>{try{if(!G||!G.P)return;const D=soDB();if(!D)return;const now=Date.now();G.P.forEach(p=>{if(!p.u||isMeP(p)||/^fk_/.test(p.u))return;const c=GMU[p.u];if(c&&now-c.t<8000)return;GMU[p.u]={v:c?c.v:0,t:now};D.get('users/'+p.u+'/pub/gm').then(v=>{GMU[p.u]={v:v?1:0,t:Date.now()}}).catch(()=>{})})}catch(e){}},2000);
 // =====================================================================
-// DEBUG MODE (CTRL + ALT + D (MAC: CMD + OPTION + D)): test every feature as any rank. Owners only (or when testing the file on your own computer).
+// DEBUG MODE (CTRL + ALT + D (MAC: CTRL + SHIFT + D, OR TYPE "DEBUG")): test every feature as any rank. Owners only (or when testing the file on your own computer).
 // =====================================================================
 const dbgOk=()=>true;
 const DBG={on:0};
@@ -7239,7 +7243,7 @@ function dbgPanel(){let d=document.getElementById('dbgP');if(d){d.remove();retur
  d=document.createElement('div');d.id='dbgP';d.style.cssText='position:fixed;left:8px;top:8px;z-index:100000;width:min(340px,92vw);max-height:92vh;overflow:auto;background:#06100ae8;border:2px solid #5ad06a;color:#c8ffc8;font:12px "Kode Mono",monospace;padding:10px;box-shadow:0 0 30px #000';
  const roles=[['','REAL ME'],['player','PLAYER'],['mod','MOD'],['admin','ADMIN'],['gubby','GUBBY'],['owner','OWNER']];
  const btn=(id,t,on)=>'<button data-db="'+id+'" style="font:700 11px monospace;margin:2px;padding:5px 7px;background:'+(on?'#5ad06a':'#0e1a10')+';color:'+(on?'#06100a':'#c8ffc8')+';border:1px solid #5ad06a;cursor:pointer">'+t+'</button>';
- const paint=()=>{d.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:14px">🛠 DEBUG MODE</b><span>'+btn('x','HIDE')+btn('exit','⏏ EXIT DEBUG')+'</span></div><div style="opacity:.7;margin:4px 0 8px">YOU ARE A GUEST. CTRL + ALT + D (MAC: CMD + OPTION + D) SHOWS / HIDES THIS. EXIT DEBUG TAKES YOU BACK TO SIGN IN.</div>'+
+ const paint=()=>{d.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:14px">🛠 DEBUG MODE</b><span>'+btn('x','HIDE')+btn('exit','⏏ EXIT DEBUG')+'</span></div><div style="opacity:.7;margin:4px 0 8px">YOU ARE A GUEST. CTRL + ALT + D (MAC: CTRL + SHIFT + D, OR TYPE "DEBUG") SHOWS / HIDES THIS. EXIT DEBUG TAKES YOU BACK TO SIGN IN.</div>'+
   '<div><b>PRETEND TO BE:</b></div><div>'+roles.map(([k,n])=>btn('r:'+k,n,(window.__DBGR||'')==k)).join('')+'</div>'+
   '<div style="margin-top:6px"><b>GUBBY:</b></div><div>'+btn('gm',GUBM.on?'🐛 GUBBY MODE: ON':'🐛 GUBBY MODE: OFF',GUBM.on)+'</div>'+
   '<div style="margin-top:6px"><b>OPEN:</b></div><div>'+btn('adm','ADMIN PANEL')+btn('trials','AYAN TRIALS')+btn('onb','FIRST-JOIN WIZARD')+btn('lobby','LOBBY')+btn('d100','DOOR 100')+btn('d0','DOOR 0')+'</div>'+
@@ -7255,6 +7259,9 @@ function dbgPanel(){let d=document.getElementById('dbgP');if(d){d.remove();retur
    else if(['god','noclip','slow'].includes(k)){OWNS[k]^=1;TOASTS.push({h:'DEBUG',n:k.toUpperCase()+(OWNS[k]?' ON':' OFF'),t:0})}
    else if(k=='knobs'){PF.coins=(PF.coins|0)+500;save()}}catch(e){console.error(e);TOASTS.push({h:'DEBUG',n:'THAT DID NOT WORK HERE',t:0})}paint()})};paint();document.body.appendChild(d)}
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.altKey&&(e.code=='KeyD'||String(e.key).toLowerCase()=='d')){e.preventDefault();e.stopImmediatePropagation();dbgPanel()}},true);
+// Macs grab Cmd+Option+D (it hides the Dock), so there are more ways in: Ctrl+Shift+D, or just type the word DEBUG
+{let buf='',bt=0;addEventListener('keydown',e=>{try{if(e.ctrlKey&&e.shiftKey&&!e.altKey&&e.code=='KeyD'){e.preventDefault();e.stopImmediatePropagation();dbgPanel();return}
+ const t=e.target;if(t&&/INPUT|TEXTAREA|SELECT/.test(t.tagName)&&!(t.closest&&t.closest('#login')))return;if(e.key&&e.key.length==1){const now=performance.now();if(now-bt>1500)buf='';bt=now;buf=(buf+e.key.toLowerCase()).slice(-5);if(buf=='debug'){buf='';dbgPanel()}}}catch(x){}},true)}
 // a little badge so you never forget you're pretending
 {const o=draw;draw=function(){o.apply(this,arguments);try{if(DBG.session)txO('🛠 DEBUG MODE'+(window.__DBGR?' - '+window.__DBGR.toUpperCase():''),W/2,H-8,3,'#8cff9a','#000','center')}catch(e){}}}
 
@@ -7848,7 +7855,7 @@ function sk2Draw(){const S=G.sk2,L=S.L,c=S.cam,t=S.t,r=rr(X);const sh=G.shake>0?
  if(S.fin){const t2=S.fin.t;if(t2<.35){X.fillStyle='rgba(170,240,255,'+(1-t2/.35)*.9+')';X.fillRect(0,0,W,H)}if(t2>2.4)txO('YOU ESCAPED.',W/2,70,8,'#aef4ff','#000','center');if(t2>.9&&t2<2.4)txO('BANG!',W/2+((Math.floor(t2*2)%2)?40:-40),60,6,'#ff6a5a','#000','center')}
  if(S.js){X.fillStyle='#000';X.fillRect(0,0,W,H);const z=1+(.7-S.js)*4;sk2Seek(W/2,H/2+30*z,z*1.4,performance.now()/60,1,0);G.flash=.1}}
 addEventListener('keydown',e=>{try{if(G&&G.sk2&&(e.code=='KeyE'||e.code=='Enter')){G.sk2.eq=.15;e.preventDefault();e.stopImmediatePropagation()}}catch(x){}},true);
-{const o=bossCut;bossCut=function(k){try{if(k=='seek'&&G&&G.R&&CH.includes(G.R.n)&&!(NET&&NET.game)&&(G.np|0)<=1&&!G.bk){sk2Start(G.R.n);return}}catch(e){console.error(e)}return o.apply(this,arguments)}}
+{const o=bossCut;bossCut=function(k){try{if(false&&k=='seek'&&G&&G.R&&CH.includes(G.R.n)&&!(NET&&NET.game)&&(G.np|0)<=1&&!G.bk){sk2Start(G.R.n);return}}catch(e){console.error(e)}return o.apply(this,arguments)}}
 {const o=upd;upd=function(dt){if(G&&G.sk2&&st=='play'){try{if(G.shake>0)G.shake=Math.max(0,G.shake-dt*2);if(G.flash>0)G.flash-=dt;sk2Upd(Math.min(dt,.05))}catch(e){console.error(e);G.sk2=null}return}return o.apply(this,arguments)}}
 {const o=draw;draw=function(){if(G&&G.sk2&&st=='play'){try{sk2Draw()}catch(e){console.error(e);G.sk2=null}return}return o.apply(this,arguments)}}
 // ---------- BUILDER IN MULTIPLAYER: the host (an owner) opens the builder in their server and everyone in it builds together ----------
@@ -7919,7 +7926,7 @@ setInterval(()=>{try{if(BLD.on&&BLD.play&&!BLD._wp&&!(NET&&NET.game&&!NET.host)&
 // weave around fallen furniture, pick the Guiding Light door in each junction (doors are turned sideways in the walls),
 // dodge Seek's hands and the burning chandeliers, and Guiding Light slams the exit door in Seek's face.
 // =====================================================================
-const TDC_START=[35,60,85];
+const TDC_START=[];// the original Seek chase is back (the top-down test chase is off)
 function tdcLevel(){const S={v:1,n:'SEEK CHASE',w:236,h:12,f:1,X:-1,sx:4,sy:6,o:[]},R=Math.random,J=[];
  const wall=(c,r)=>S.o.push(['Wh',c,r]);
  const slalom=(a,b,step)=>{let top=R()<.5;for(let c=a;c<b;c+=step){const len=2+(R()*2|0);const pick=()=>['b','x','r','t','F','c'][R()*6|0];if(top){for(let r=2;r<2+len*2;r+=2)S.o.push([R()<.5?'b':pick(),c,r])}else{for(let r=11-len*2;r<11;r+=2)S.o.push([R()<.5?'b':pick(),c,Math.min(9,r)])}if(R()<.35)S.o.push(['x',c+3,4+(R()*4|0)]);top=!top}};
@@ -8006,6 +8013,90 @@ addEventListener('click',e=>{try{if(!(typeof isGubAcct=='function'&&isGubAcct())
 {const o=player;player=function(p,cx,cy){const r=o.apply(this,arguments);try{if(window.GUBNERF&&isMeP(p)&&st=='play'){txO('NERFED',Math.round((p.rx??p.px)-cx),Math.round((p.ry??p.py)-cy)-30,3,'#ff6a5a','#000','center')}}catch(e){}return r}}
 // signing in again makes it normal (GUBNERF only lives until the page reloads or you sign in again)
 {const o=socialLogin;socialLogin=async function(){window.GUBNERF=0;return o.apply(this,arguments)}}
+// ---------- BUILDER BRUSH: place / break 1×1, 3×3 or 5×5 at once (B to switch), and drag to paint anything ----------
+BLD.brush=BLD.brush||1;
+function bldBatch(fn){const p0=bldPush,r0=bldRebuild,m0=msg;let pushed=0,changed=0;bldPush=function(){if(!pushed){pushed=1;p0.apply(this,arguments)}changed=1};bldRebuild=function(){changed=1};msg=function(){};try{fn()}finally{bldPush=p0;bldRebuild=r0;msg=m0}if(changed)bldRebuild();return changed}
+const bldBrushOK=k=>k&&BT[k]&&!isTop(k)&&k!='X'&&k!='S'&&!String(k).startsWith('sec:');
+{const o=bldPlace;bldPlace=function(c,r){const n=BLD.brush|0,k=BLD.sel;if(n<=1||!bldBrushOK(k))return o.apply(this,arguments);const T=BT[k];const[w,h]=(typeof bfp=='function')?bfp([k,0,0,BROT.has(k)?BLD.rot:0]):[T[2],T[3]];const half=(n-1)/2;
+ bldBatch(()=>{for(let a=-half;a<=half;a++)for(let b=-half;b<=half;b++){const cc=c+a*w,r2=r+b*h;if(cc>=1&&r2>=2)o.call(this,cc,r2)}})}}
+{const o=bldErase;bldErase=function(c,r){const n=BLD.brush|0;if(n<=1)return o.apply(this,arguments);const half=(n-1)/2;bldBatch(()=>{for(let a=-half;a<=half;a++)for(let b=-half;b<=half;b++){let guard=0;while(guard++<6){const before=BLD.S.o.length;o.call(this,c+a,r+b);if(BLD.S.o.length===before)break}}})}}
+function bldBrushSet(n){BLD.brush=n;try{bldUI()}catch(e){}try{msg('BRUSH: '+n+'×'+n)}catch(e){}}
+// buttons in the TOOLS box
+{const o=bldUI;bldUI=function(){o.apply(this,arguments);try{if(BLD.play)return;const u=document.getElementById('bldUI'),bR=u&&u.querySelector('#bR');if(!bR||u.querySelector('#bBr'))return;const box=document.createElement('div');box.id='bBr';box.className='pal';box.style.marginTop='4px';
+ box.innerHTML=[1,3,5].map(n=>`<button data-br=${n} class="${(BLD.brush|0)==n?'on':''}" title="B to switch">${n==1?'▪':n==3?'▦':'▩'} ${n}×${n}</button>`).join('');bR.parentNode.after(box);box.querySelectorAll('[data-br]').forEach(b=>b.onclick=()=>bldBrushSet(+b.dataset.br))}catch(e){}}}
+window.BKH=window.BKH||[];BKH.push(e=>{if(e.code=='KeyB'&&!e.ctrlKey&&!e.metaKey){const L=[1,3,5];bldBrushSet(L[(L.indexOf(BLD.brush|0)+1)%3]);return true}return false});
+// drag to paint ANY floor block (not just walls), one placement per new tile
+addEventListener('mousemove',e=>{try{if(!BLD.on||BLD.play||e.target!==X.canvas||!(e.buttons&1)||BLD.selm||BLD.paste||BLD.edit||(BLD.keys&&(BLD.keys.ShiftLeft||BLD.keys.ShiftRight)))return;const k=BLD.sel;if(!bldBrushOK(k)||k=='W'||k=='hg')return;const[c,r]=bldXY(e),T=BT[k],[w,h]=bfp([k,0,0,BROT.has(k)?BLD.rot:0]),n=BLD.brush|0,sx=w*n,sy=h*n;
+ const key=Math.floor(c/sx)+','+Math.floor(r/sy);if(BLD._dk===key)return;if(BLD._dlast&&Math.abs(c-BLD._dlast[0])<sx&&Math.abs(r-BLD._dlast[1])<sy)return;BLD._dk=key;BLD._dlast=[c,r];const m0=msg;msg=function(){};try{bldPlace(c,r)}finally{msg=m0}}catch(x){}},true);
+addEventListener('mouseup',()=>{BLD._dk=null;BLD._dlast=null},true);
+addEventListener('mousedown',e=>{try{if(BLD.on&&!BLD.play&&e.target===X.canvas&&e.button==0){const[c,r]=bldXY(e);BLD._dlast=[c,r];BLD._dk=null}}catch(x){}},true);
+// show the brush area under the mouse
+{const o=draw;draw=function(){o.apply(this,arguments);try{if(!BLD.on||BLD.play||!G||!G.R||(BLD.brush|0)<=1||BLD.mx<0||st!='play')return;const n=BLD.brush|0,half=(n-1)/2,k=BLD.sel,ok=bldBrushOK(k);const[w,h]=ok?bfp([k,0,0,BROT.has(k)?BLD.rot:0]):[1,1];
+ const cx=G.cx||0,cy=G.cy||0,x0=(BLD.mx-half*w)*16-cx,y0=(BLD.my-half*h)*16-cy;X.save();X.globalAlpha=.18;X.fillStyle=ok?'#8cff9a':'#ff9a8a';X.fillRect(x0,y0,n*w*16,n*h*16);X.globalAlpha=.9;X.strokeStyle='#ffd860';X.setLineDash([3,2]);X.strokeRect(x0+.5,y0+.5,n*w*16-1,n*h*16-1);X.restore();tx(n+'×'+n,x0+n*w*8,y0+n*h*16+7,3,'#ffd860','center')}catch(e){}}}
+// ---------- BUILDER: EDIT ONE BLOCK (shade light/dark, rotation, size, walk-through, delete) - SHIFT+CLICK a block, or the 🔧 tool ----------
+const SHADES=[[1,'☀ LIGHT'],[0,'NORMAL'],[-1,'◐ SLIGHTLY DARK'],[-2,'● DARK']];
+let BSHIFT=0;addEventListener('keydown',e=>{if(e.key=='Shift')BSHIFT=1},true);addEventListener('keyup',e=>{if(e.key=='Shift')BSHIFT=0},true);addEventListener('blur',()=>{BSHIFT=0});
+function bldInspect(i){let d=document.getElementById('bldIns');const S=BLD.S,q=S&&S.o[i];if(!q){if(d)d.remove();BLD.insp=-1;return}BLD.insp=i;if(!d){d=document.createElement('div');d.id='bldIns';document.body.appendChild(d)}
+ const k=q[0],T=BT[k]||[k],rotOk=BROT.has(k)||k.startsWith('sp:')||k.startsWith('cs:'),scOk=rotOk,wkOk=k.startsWith('cs:')||k.startsWith('sp:');
+ d.style.cssText='position:fixed;right:14px;top:90px;z-index:1200;width:230px;background:linear-gradient(#3a2418,#22140d);border:3px solid #6e4c33;border-radius:12px;padding:12px;color:#f3e6cf;font:12px "Kode Mono",monospace;box-shadow:0 8px 30px rgba(0,0,0,.6)';
+ const B=(on,attr,t)=>`<button ${attr} style="margin:2px;padding:5px 7px;border-radius:7px;border:2px solid ${on?'#f3e6cf':'#6e4c33'};background:${on?'#f3e6cf':'#1a0f09'};color:${on?'#2a1a12':'#f3e6cf'};font:700 11px 'Kode Mono',monospace;cursor:pointer">${t}</button>`;
+ d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">🔧 ${esc(String(T[0]).slice(0,22))}</b><button id=biX style="background:none;border:0;color:#f3e6cf;font:700 18px Arial;cursor:pointer">✕</button></div><div style="opacity:.6;margin:2px 0 8px">AT ${q[1]}, ${q[2]}</div>
+ <div><b>SHADE</b></div><div>${SHADES.map(([v,t])=>B((q[7]|0)==v,'data-bsh="'+v+'"',t)).join('')}</div>
+ ${rotOk?`<div style="margin-top:6px"><b>ROTATION</b></div><div>${[0,1,2,3].map(v=>B((q[3]|0)==v,'data-bro="'+v+'"',(v*90)+'°')).join('')}</div>`:''}
+ ${scOk?`<div style="margin-top:6px"><b>SIZE</b></div><div>${[.5,1,1.5,2,3].map(v=>B((+q[6]||1)==v,'data-bsz="'+v+'"','×'+v)).join('')}</div>`:''}
+ ${wkOk?`<div style="margin-top:6px"><b>SOLID</b></div><div>${B(!q[5],'data-bso="0"','SOLID')}${B(!!q[5],'data-bso="1"','WALK-THROUGH')}</div>`:''}
+ <div style="margin-top:10px;display:flex;gap:6px"><button id=biDel style="flex:1;padding:7px;border-radius:8px;border:0;background:#d8443a;color:#fff;font:700 12px 'Kode Mono',monospace;cursor:pointer">🗑 DELETE</button><button id=biDone style="flex:1;padding:7px;border-radius:8px;border:0;background:#f3e6cf;color:#2a1a12;font:700 12px 'Kode Mono',monospace;cursor:pointer">DONE</button></div>`;
+ const set=(fn)=>{bldPush();while(q.length<8)q.push(0);fn();bldRebuild();bldInspect(BLD.S.o.indexOf(q))};
+ d.querySelectorAll('[data-bsh]').forEach(b=>b.onclick=()=>set(()=>{q[7]=+b.dataset.bsh}));d.querySelectorAll('[data-bro]').forEach(b=>b.onclick=()=>set(()=>{q[3]=+b.dataset.bro}));
+ d.querySelectorAll('[data-bsz]').forEach(b=>b.onclick=()=>set(()=>{q[6]=+b.dataset.bsz}));d.querySelectorAll('[data-bso]').forEach(b=>b.onclick=()=>set(()=>{q[5]=+b.dataset.bso}));
+ d.querySelector('#biX').onclick=d.querySelector('#biDone').onclick=()=>bldInspect(-1);d.querySelector('#biDel').onclick=()=>{bldPush();S.o.splice(S.o.indexOf(q),1);bldRebuild();bldInspect(-1)}}
+function bldPick(c,r){const S=BLD.S;if(r<2){const i=S.o.findIndex(([k,c2,r2])=>(isTop(k)||String(k).startsWith('ow:'))&&c>=c2&&c<c2+((BT[k]||[0,0,1])[2]||1)&&(r2<2||r2==r));if(i>=0)return i}
+ for(let i=S.o.length-1;i>=0;i--){const q=S.o[i];if(isTop(q[0]))continue;let w=1,h=1;try{[w,h]=bfp(q)}catch(e){}if(c>=q[1]&&c<q[1]+w&&r>=q[2]&&r<q[2]+h)return i}return-1}
+{const o=bldPlace;bldPlace=function(c,r){if(BLD.on&&!BLD.play&&(BSHIFT||BLD.edit||(BLD.keys&&(BLD.keys.ShiftLeft||BLD.keys.ShiftRight)))){const i=bldPick(c,r);if(i>=0)bldInspect(i);else{bldInspect(-1);msg('NOTHING THERE - CLICK A BLOCK TO EDIT IT')}return}return o.apply(this,arguments)}}
+{const o=bldUI;bldUI=function(){o.apply(this,arguments);try{if(BLD.play){bldInspect(-1);return}const u=document.getElementById('bldUI'),bR=u&&u.querySelector('#bR');if(!bR||u.querySelector('#bEd'))return;const b=document.createElement('button');b.id='bEd';b.className=BLD.edit?'on':'';b.textContent=BLD.edit?'🔧 EDITING (CLICK A BLOCK)':'🔧 EDIT A BLOCK (SHIFT+CLICK)';b.onclick=()=>{BLD.edit=BLD.edit?0:1;if(!BLD.edit)bldInspect(-1);bldUI()};bR.after(b)}catch(e){}}}
+setInterval(()=>{try{if(!BLD.on||BLD.play){const d=document.getElementById('bldIns');if(d)d.remove()}}catch(e){}},500);
+// shades show in the level (building, testing and when people play it)
+{const o=bldRoom;bldRoom=function(S,n,base){const R=o.apply(this,arguments);try{R.bshade=(S.o||[]).filter(q=>q[7]).map(q=>{let w=1,h=1;try{[w,h]=isTop(q[0])?[BT[q[0]][2],2]:bfp(q)}catch(e){}return[q[1]*16,(isTop(q[0])?0:q[2])*16,w*16,h*16,q[7]]})}catch(e){}return R}}
+{const o=drawAfterMask;drawAfterMask=function(R,cx,cy){o.apply(this,arguments);try{if(R&&R.bshade&&R.bshade.length)R.bshade.forEach(([x,y,w,h,s])=>{const sx=x-cx,sy=y-cy;if(sx>W||sy>H||sx+w<0||sy+h<0)return;if(s>0){X.globalCompositeOperation='lighter';X.fillStyle='rgba(90,80,60,.35)';X.fillRect(sx,sy-6,w,h+6);X.globalCompositeOperation='source-over'}else{X.fillStyle=s==-1?'rgba(0,0,0,.35)':'rgba(0,0,0,.65)';X.fillRect(sx,sy-6,w,h+6)}});
+ if(BLD.on&&!BLD.play&&BLD.insp>=0&&BLD.S.o[BLD.insp]){const q=BLD.S.o[BLD.insp];let w=1,h=1;try{[w,h]=isTop(q[0])?[BT[q[0]][2],2]:bfp(q)}catch(e){}const y=(isTop(q[0])?0:q[2])*16;X.strokeStyle='#ffd860';X.lineWidth=1;X.setLineDash([3,2]);X.strokeRect(q[1]*16-cx+.5,y-cy+.5,w*16-1,h*16-1);X.setLineDash([])}}catch(e){}}}
+// ---------- BUILDER: SELECT / MOVE / COPY / PASTE (like Mario Maker). V = select tool, drag a box, drag it to move,
+// CTRL+C copy, CTRL+X cut, CTRL+V paste (click to drop, ESC to stop), CTRL+D duplicate, DELETE removes ----------
+BLD.selm=0;BLD.sel2=[];BLD.box=null;BLD.mvo=null;BLD.clip=null;BLD.paste=null;
+const bsInBox=(c,r,b)=>c>=Math.min(b.c0,b.c1)&&c<=Math.max(b.c0,b.c1)&&r>=Math.min(b.r0,b.r1)&&r<=Math.max(b.r0,b.r1);
+function bsGrab(){const S=BLD.S,b=BLD.box;if(!b)return;BLD.sel2=S.o.filter(q=>!isTop(q[0])&&q[2]>=2&&bsInBox(q[1],q[2],b));BLD.selFt=Object.keys(S.ft||{}).filter(k=>{const[c,r]=k.split(',').map(Number);return bsInBox(c,r,b)});msg(BLD.sel2.length+BLD.selFt.length?'SELECTED '+(BLD.sel2.length+BLD.selFt.length)+' THINGS - DRAG TO MOVE, CTRL+C COPY, DEL DELETE':'NOTHING IN THERE')}
+function bsCopy(){const b=BLD.box,S=BLD.S;if(!b||!(BLD.sel2.length||BLD.selFt.length))return msg('SELECT SOMETHING FIRST (V)');const c0=Math.min(b.c0,b.c1),r0=Math.min(b.r0,b.r1);BLD.clip={o:BLD.sel2.map(q=>{const z=q.slice();z[1]-=c0;z[2]-=r0;return z}),ft:BLD.selFt.map(k=>{const[c,r]=k.split(',').map(Number);return[c-c0,r-r0,S.ft[k]]}),w:Math.abs(b.c1-b.c0)+1,h:Math.abs(b.r1-b.r0)+1};msg('COPIED '+(BLD.clip.o.length+BLD.clip.ft.length)+' THINGS - CTRL+V TO PASTE')}
+function bsDelete(){const S=BLD.S;if(!(BLD.sel2.length||(BLD.selFt||[]).length))return;bldPush();S.o=S.o.filter(q=>!BLD.sel2.includes(q));(BLD.selFt||[]).forEach(k=>{if(S.ft)delete S.ft[k]});BLD.sel2=[];BLD.selFt=[];bldRebuild();msg('DELETED')}
+function bsPasteAt(c,r){const C=BLD.paste,S=BLD.S;if(!C)return;bldPush();const nw=[];C.o.forEach(q=>{const z=q.slice();z[1]+=c;z[2]+=r;if(z[2]>=2&&z[1]>=1){S.o.push(z);nw.push(z)}});C.ft.forEach(([a,b,v])=>{if(r+b>=2){S.ft=S.ft||{};S.ft[(c+a)+','+(r+b)]=v}});
+ S.w=Math.min(2000,Math.max(S.w,c+C.w+3));S.h=Math.min(600,Math.max(S.h,r+C.h+3));BLD.box={c0:c,r0:r,c1:c+C.w-1,r1:r+C.h-1};BLD.sel2=nw;BLD.selFt=C.ft.map(([a,b])=>(c+a)+','+(r+b));bldRebuild();msg('PASTED - CLICK AGAIN FOR MORE, ESC TO STOP')}
+function bsTool(on){BLD.selm=on?1:0;BLD.paste=null;if(!on){BLD.box=null;BLD.sel2=[];BLD.selFt=[]}try{bldUI()}catch(e){}msg(on?'SELECT: DRAG A BOX AROUND THINGS':'SELECT OFF')}
+{const o=bldPlace;bldPlace=function(c,r){if(BLD.on&&!BLD.play){if(BLD.paste){if(BLD._pd)return;BLD._pd=1;bsPasteAt(c,r);return}if(BLD.selm){if((BLD.box&&BLD.box.drag)||BLD.mvo)return;const b=BLD.box;if(b&&(BLD.sel2.length||(BLD.selFt||[]).length)&&bsInBox(c,r,b)){BLD.mvo={c0:c,r0:r,dc:0,dr:0}}else{BLD.box={c0:c,r0:r,c1:c,r1:r,drag:1};BLD.sel2=[];BLD.selFt=[]}return}}return o.apply(this,arguments)}}
+addEventListener('mousemove',e=>{try{if(!BLD.on||BLD.play||e.target!==X.canvas)return;const[c,r]=bldXY(e);if(BLD.paste){BLD.mx=c;BLD.my=r}if(!(e.buttons&1)||!BLD.selm)return;if(BLD.mvo){BLD.mvo.dc=c-BLD.mvo.c0;BLD.mvo.dr=r-BLD.mvo.r0}else if(BLD.box&&BLD.box.drag){BLD.box.c1=c;BLD.box.r1=r}}catch(x){}},true);
+addEventListener('mouseup',e=>{BLD._pd=0;try{if(!BLD.on||BLD.play||!BLD.selm)return;if(BLD.mvo){const{dc,dr}=BLD.mvo;BLD.mvo=null;if(dc||dr){const S=BLD.S;bldPush();BLD.sel2.forEach(q=>{q[1]+=dc;q[2]=Math.max(2,q[2]+dr)});if(BLD.selFt&&BLD.selFt.length){const nf={};BLD.selFt.forEach(k=>{const[c,r]=k.split(',').map(Number);nf[(c+dc)+','+Math.max(2,r+dr)]=S.ft[k];delete S.ft[k]});Object.assign(S.ft,nf);BLD.selFt=Object.keys(nf)}const b=BLD.box;b.c0+=dc;b.c1+=dc;b.r0+=dr;b.r1+=dr;S.w=Math.min(2000,Math.max(S.w,Math.max(b.c0,b.c1)+4));S.h=Math.min(600,Math.max(S.h,Math.max(b.r0,b.r1)+4));bldRebuild();msg('MOVED')}}
+ else if(BLD.box&&BLD.box.drag){BLD.box.drag=0;bsGrab()}}catch(x){}},true);
+window.BKH=window.BKH||[];BKH.push(e=>{const ctl=e.ctrlKey||e.metaKey;let h=1;
+ if(e.code=='KeyV'&&!ctl)bsTool(!BLD.selm);else if(ctl&&e.code=='KeyC')bsCopy();else if(ctl&&e.code=='KeyX'){bsCopy();bsDelete()}else if(ctl&&e.code=='KeyV'){if(!BLD.clip)msg('COPY SOMETHING FIRST (CTRL+C)');else{BLD.paste=BLD.clip;msg('CLICK WHERE TO PASTE (ESC TO STOP)')}}
+ else if(ctl&&e.code=='KeyD'){bsCopy();if(BLD.clip){BLD.paste=BLD.clip;msg('CLICK WHERE TO PUT THE COPY')}}else if((e.code=='Delete'||e.code=='Backspace')&&BLD.selm)bsDelete();else if(e.code=='Escape'&&(BLD.paste||BLD.box)){BLD.paste=null;BLD.box=null;BLD.sel2=[];BLD.selFt=[]}else h=0;
+ return !!h});
+{const o=bldUI;bldUI=function(){o.apply(this,arguments);try{if(BLD.play){BLD.paste=null;return}const u=document.getElementById('bldUI'),ref=u&&(u.querySelector('#bEd')||u.querySelector('#bR'));if(!ref||u.querySelector('#bSel'))return;const b=document.createElement('button');b.id='bSel';b.className=BLD.selm?'on':'';b.title='V';b.textContent=BLD.selm?'⬚ SELECTING (V)':'⬚ SELECT / COPY (V)';b.onclick=()=>bsTool(!BLD.selm);ref.after(b);
+ if(BLD.selm){const tip=document.createElement('div');tip.className='sub';tip.style.cssText='font-size:10px;opacity:.75;margin:4px 0';tip.textContent='DRAG A BOX · DRAG IT TO MOVE · CTRL+C / X / V / D · DEL';b.after(tip)}}catch(e){}}}
+// draw the box, the selected things and the paste preview
+{const o=drawAfterMask;drawAfterMask=function(R,cx,cy){o.apply(this,arguments);try{if(!BLD.on||BLD.play)return;const fp=q=>{try{return bfp(q)}catch(e){return[1,1]}};X.save();
+ if(BLD.box){const b=BLD.box,m=BLD.mvo||{dc:0,dr:0},x=(Math.min(b.c0,b.c1)+m.dc)*16-cx,y=(Math.min(b.r0,b.r1)+m.dr)*16-cy,w=(Math.abs(b.c1-b.c0)+1)*16,h=(Math.abs(b.r1-b.r0)+1)*16;X.fillStyle='rgba(120,200,255,.12)';X.fillRect(x,y,w,h);X.strokeStyle='#7ac8ff';X.setLineDash([4,3]);X.lineWidth=1;X.strokeRect(x+.5,y+.5,w-1,h-1);X.setLineDash([]);
+  BLD.sel2.forEach(q=>{const[ww,hh]=fp(q);X.strokeStyle='#ffd860';X.strokeRect((q[1]+m.dc)*16-cx+.5,(q[2]+m.dr)*16-cy+.5,ww*16-1,hh*16-1)})}
+ if(BLD.paste&&BLD.mx>=0){const C=BLD.paste,x=BLD.mx*16-cx,y=BLD.my*16-cy;X.globalAlpha=.5;X.fillStyle='#8cff9a';C.o.forEach(q=>{const[ww,hh]=fp(q);X.fillRect(x+q[1]*16,y+q[2]*16,ww*16,hh*16)});C.ft.forEach(([a,b])=>X.fillRect(x+a*16,y+b*16,16,16));X.globalAlpha=1;X.strokeStyle='#8cff9a';X.setLineDash([4,3]);X.strokeRect(x+.5,y+.5,C.w*16-1,C.h*16-1);X.setLineDash([])}
+ X.restore()}catch(e){}}}
+// ---------- BUILDER: WALK MODE (like Minecraft / Terraria) - walk around as yourself and build/break within reach. M switches ----------
+BLD.walk=0;const BREACH=6;
+{const o=upd;upd=function(dt){if(!(BLD.on&&!BLD.play&&BLD.walk&&G&&G.R))return o.apply(this,arguments);try{G.R.ev=null;G.R.scr=null;G.R.eyeE=null;const K=BLD.keys||{};['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight','KeyC','ControlLeft'].forEach(c=>{keys[c]=!!K[c]})}catch(e){}
+ BLD.play=1;try{return o.apply(this,arguments)}finally{BLD.play=0;try{G.open=0}catch(e){}}}}
+const bwReach=(c,r)=>{const p=G.P[0];return !p||Math.hypot(c*16+8-p.px,r*16+8-p.py)<=BREACH*16};
+{const o=bldPlace;bldPlace=function(c,r){if(BLD.on&&!BLD.play&&BLD.walk&&!bwReach(c,r)){msg('TOO FAR - WALK CLOSER');return}return o.apply(this,arguments)}}
+{const o=bldErase;bldErase=function(c,r){if(BLD.on&&!BLD.play&&BLD.walk&&!bwReach(c,r))return;return o.apply(this,arguments)}}
+function bwToggle(){BLD.walk=BLD.walk?0:1;const p=G&&G.P&&G.P[0];if(BLD.walk&&p){p.stun=0;try{const R=G.R;const free=(x,y)=>!(R.sol||[]).some(s=>x>s[0]-6&&x<s[0]+s[2]+6&&y>s[1]-2&&y<s[1]+s[3]+8);if(!free(p.px,p.py)){p.px=BLD.S.sx*16+8;p.py=BLD.S.sy*16+8}tpP(p)}catch(e){}}try{bldUI()}catch(e){}msg(BLD.walk?'WALK MODE: WALK AROUND AND BUILD WHAT YOU CAN REACH':'FLY MODE')}
+window.BKH=window.BKH||[];BKH.push(e=>{if(e.code=='KeyM'&&!e.ctrlKey&&!e.metaKey){bwToggle();return true}return false});
+{const o=bldUI;bldUI=function(){o.apply(this,arguments);try{if(BLD.play)return;const u=document.getElementById('bldUI'),bR=u&&u.querySelector('#bR');if(!bR||u.querySelector('#bWk'))return;const b=document.createElement('button');b.id='bWk';b.className=BLD.walk?'on':'';b.textContent=BLD.walk?'🚶 WALK MODE (M)':'🕊 FLY MODE (M)';b.title='M';b.onclick=bwToggle;bR.before(b)}catch(e){}}}
+// reach circle around you in walk mode
+{const o=drawAfterMask;drawAfterMask=function(R,cx,cy){o.apply(this,arguments);try{if(!(BLD.on&&!BLD.play&&BLD.walk))return;const p=G.P[0];if(!p)return;X.save();X.strokeStyle='rgba(140,255,154,.35)';X.setLineDash([3,4]);X.beginPath();X.arc(p.px-cx,p.py-cy,BREACH*16,0,7);X.stroke();X.setLineDash([]);X.restore()}catch(e){}}}
 // admin panel fix: never build it twice at the same time (that made the tabs + builder buttons pile up)
 {const o=openAdmin;let busy=0,again=0;
  const tidy=()=>{try{const P=soP();if(!P)return;const navs=[...P.querySelectorAll('#adNav')],bodies=[...P.querySelectorAll('#adBody')];
