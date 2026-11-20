@@ -4665,7 +4665,7 @@ function openCrates(msg){openSo(`<h2>📦 LOOT CRATES</h2><p class=sub>EACH CRAT
 #ms{background:#16234a!important;color:#d8e4ff!important;border-color:#2f6bff!important}
 #lsi{background:#e0283f!important;color:#fff!important;border-color:#ff5a6e!important;box-shadow:0 6px 24px #e0283f55}
 #lca{background:transparent!important;color:#f4eee6!important;border-color:rgba(244,238,230,.55)!important}
-#gu{background:transparent!important;color:#b9b0d0!important;border-color:#6b3fa0!important}
+#gu{display:none!important}
 #lfp{color:#b9b0d0!important;border:none!important;box-shadow:none!important}
 #lem input{background:rgba(255,255,255,.05)!important;color:#f4eee6!important;border:1px solid rgba(244,238,230,.22)!important;border-radius:10px!important;padding:10px 12px!important;font-family:'Helvetica Neue','Segoe UI',Arial,sans-serif!important}
 #lem input:focus{border-color:#e0283f!important;box-shadow:0 0 0 3px #e0283f33!important}
@@ -9027,7 +9027,7 @@ function bpImgIn(im,x,y,w,h){if(!im)return;const z=Math.min(w/im.width,h/im.heig
 // =====================================================================
 // "NEW UPDATE" - shows once per update when you join
 // =====================================================================
-const GAMEVER='2026-11-20b',UPDLOG=['SALLY: NEW LOOK, CRUCIFIX WORKS ON HER, SHE NEVER WALKS BACK OUT','MORE WINDOWS (SALLY ONLY COMES THROUGH WINDOWS)','BUILDER: "WHAT IT DOES" - MAKE ANYTHING (EVEN YOUR OWN DRAWINGS) A PAINTING, SPOT, DOOR, HIDING SPOT, LIGHT, TRAP OR FINISH','BUILDER: GLASS BLOCKS','PAINTING PUZZLE: NOTHING HANGS OVER THE SPOTS','HALF SLABS, CRAWLING, DUPE HALLWAYS, VITAMINS AND MORE'];
+const GAMEVER='2026-11-20c',UPDLOG=['SALLY: NEW LOOK, CRUCIFIX WORKS ON HER, SHE NEVER WALKS BACK OUT','MORE WINDOWS (SALLY ONLY COMES THROUGH WINDOWS)','BUILDER: "WHAT IT DOES" - MAKE ANYTHING (EVEN YOUR OWN DRAWINGS) A PAINTING, SPOT, DOOR, HIDING SPOT, LIGHT, TRAP OR FINISH','BUILDER: GLASS BLOCKS','PAINTING PUZZLE: NOTHING HANGS OVER THE SPOTS','HALF SLABS, CRAWLING, DUPE HALLWAYS, VITAMINS AND MORE'];
 function updShow(){if(document.getElementById('updBox'))return;try{localStorage.setItem('seenVer',GAMEVER)}catch(e){}const d=document.createElement('div');d.id='updBox';d.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);font-family:"Kode Mono",monospace';
  d.innerHTML='<div style="background:#1a0f09;border:3px solid #d8b030;border-radius:14px;padding:18px 24px;max-width:440px;color:#f3e6cf;text-align:center;box-shadow:0 0 40px #d8b03055"><div style="font:900 26px monospace;color:#ffd860;letter-spacing:2px">NEW UPDATE!</div><div style="font-size:11px;opacity:.6;margin-bottom:10px">VERSION '+GAMEVER+'</div><div style="text-align:left;font-size:13px;line-height:1.8">'+UPDLOG.map(t=>'• '+t).join('<br>')+'</div><button id=updOk style="margin-top:14px;font:900 15px monospace;padding:8px 22px;border-radius:9px;border:0;background:#d8b030;color:#1a0f09;cursor:pointer">COOL</button></div>';
  document.body.appendChild(d);d.querySelector('#updOk').onclick=()=>d.remove();try{[660,880,1100].forEach((f,i)=>setTimeout(()=>bp(f,.15,'square',.05,f),i*110))}catch(e){}}
